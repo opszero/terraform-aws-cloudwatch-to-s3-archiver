@@ -1,7 +1,7 @@
 variable "archive_s3_bucket" {
   description = "S3 bucket name for archiving CloudWatch logs"
   type        = string
-  default     = "cloudwatch-log-archive"
+  default     = "log-group-to-s3-archiver"
 }
 
 # S3 Bucket for Log Archive
