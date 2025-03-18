@@ -10,7 +10,7 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_archive_s3_bucket"></a> [archive\_s3\_bucket](#input\_archive\_s3\_bucket) | S3 bucket name for archiving CloudWatch logs | `string` | `"cloudwatch-log-archive"` | no |
+| <a name="input_archive_s3_bucket"></a> [archive\_s3\_bucket](#input\_archive\_s3\_bucket) | S3 bucket name for archiving CloudWatch logs | `string` | `"log-group-to-s3-archiver"` | no |
 ## Resources
 
 | Name | Type |
