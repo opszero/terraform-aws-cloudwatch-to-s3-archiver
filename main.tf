@@ -80,7 +80,7 @@ resource "aws_lambda_function" "log_archiver" {
   function_name = "cloudwatch_log_archiver"
   role          = aws_iam_role.lambda_role.arn
   runtime       = "python3.13"
-  handler       = "lambda_function.lambda_handler"
+  handler       = "main.lambda_handler"
   timeout       = 900 # 15 min timeout for large exports
   memory_size   = 256
 
