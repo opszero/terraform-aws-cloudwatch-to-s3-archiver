@@ -32,40 +32,40 @@ def lambda_handler(event, context):
                     destinationPrefix=f"logs/{log_group_name}"
                 )
                 export_task_id = response['taskId']
-                print(f"✅ Export task {export_task_id} started for {log_group_name}")
+                print(f" Export task {export_task_id} started for {log_group_name}")
 
                 time.sleep(random.randint(10, 20))
                 break  # Success, exit retry loop
 
             except logs_client.exceptions.LimitExceededException:
-                print(f"⚠️ LimitExceededException for {log_group_name}. Retrying in {backoff_time} sec...")
+                print(f" LimitExceededException for {log_group_name}. Retrying in {backoff_time} sec...")
                 time.sleep(backoff_time)
                 backoff_time *= 2  # **Exponential Backoff**
                 retries += 1
 
             except Exception as e:
-                print(f"❌ Error processing {log_group_name}: {str(e)}")
+                print(f" Error processing {log_group_name}: {str(e)}")
                 return {"status": "Failed"}
 
         if not export_task_id:
-            print(f"❌ Failed to start export task for {log_group_name}")
+            print(f" Failed to start export task for {log_group_name}")
             continue
 
         if wait_for_export_completion(export_task_id):
-            print(f"✅ Export completed for {log_group_name}")
+            print(f" Export completed for {log_group_name}")
 
             if verify_s3_logs(log_group_name):
-                print(f"✅ Logs successfully uploaded to S3 for {log_group_name}")
+                print(f" Logs successfully uploaded to S3 for {log_group_name}")
 
-                # 🚀 **Lambda Logs को delete मत करो, बाकी सब delete कर दो**
+               
                 if log_group_name == f"/aws/lambda/{context.function_name}":
-                    print(f"⚠️ Skipping deletion of Lambda log group: {log_group_name}")
+                    print(f" Skipping deletion of Lambda log group: {log_group_name}")
                 else:
                     delete_cloudwatch_logs(log_group_name)
             else:
-                print(f"❌ Logs not found in S3 for {log_group_name}, skipping deletion")
+                print(f" Logs not found in S3 for {log_group_name}, skipping deletion")
         else:
-            print(f"❌ Export failed for {log_group_name}, skipping deletion")
+            print(f" Export failed for {log_group_name}, skipping deletion")
 
     return {"status": "Completed"}
 
@@ -93,6 +93,6 @@ def verify_s3_logs(log_group_name):
 def delete_cloudwatch_logs(log_group_name):
     try:
         logs_client.delete_log_group(logGroupName=log_group_name)
-        print(f"✅ Deleted log group: {log_group_name}")
+        print(f" Deleted log group: {log_group_name}")
     except Exception as e:
-        print(f"❌ Failed to delete log group {log_group_name}: {str(e)}")
+        print(f" Failed to delete log group {log_group_name}: {str(e)}")
