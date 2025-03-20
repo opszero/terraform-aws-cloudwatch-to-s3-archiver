@@ -4,9 +4,49 @@ variable "archive_s3_bucket" {
   default     = "log-group-to-s3-archiver"
 }
 
+data "aws_region" "current" {
+}
+
 # S3 Bucket for Log Archive
 resource "aws_s3_bucket" "log_archive" {
   bucket = var.archive_s3_bucket
+}
+
+resource "aws_s3_bucket_policy" "allow_access_from_another_account" {
+  bucket = aws_s3_bucket.example.id
+  policy = data.aws_iam_policy_document.allow_access_from_another_account.json
+}
+
+data "aws_iam_policy_document" "allow_access_from_another_account" {
+  statement {
+    actions = ["s3:GetBucketAcl"]
+    effect  = "Allow"
+
+    resources = [aws_s3_bucket.log_archive.arn]
+
+    principals {
+      type        = "Service"
+      identifiers = ["logs.${data.aws_region.current.name}.amazonaws.com"]
+    }
+  }
+
+  statement {
+    actions = ["s3:PutObject"]
+    effect  = "Allow"
+
+    resources = ["${aws_s3_bucket.log_archive.arn}/*"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["logs.${data.aws_region.current.name}.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "s3:x-amz-acl"
+      values   = ["bucket-owner-full-control"]
+    }
+  }
 }
 
 # IAM Role for Lambda
