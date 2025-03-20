@@ -1,10 +1,8 @@
-# ✅ S3 Bucket for Log Archive
 resource "aws_s3_bucket" "log_archive" {
   bucket        = var.archive_s3_bucket
   force_destroy = true
 }
 
-# ✅ Disable Public Access Block
 resource "aws_s3_bucket_public_access_block" "log_archive" {
   bucket = aws_s3_bucket.log_archive.id
 
@@ -14,11 +12,9 @@ resource "aws_s3_bucket_public_access_block" "log_archive" {
   restrict_public_buckets = true
 }
 
-# ✅ Get AWS Account and Region
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-# ✅ Fix Bucket Policy
 resource "aws_s3_bucket_policy" "log_archive_policy" {
   bucket = aws_s3_bucket.log_archive.id
 
@@ -49,7 +45,7 @@ resource "aws_s3_bucket_policy" "log_archive_policy" {
   })
 }
 
-# ✅ IAM Role for Lambda
+
 resource "aws_iam_role" "lambda_role" {
   name = var.lambda_role_name
 
@@ -65,7 +61,7 @@ resource "aws_iam_role" "lambda_role" {
   })
 }
 
-# ✅ Fix IAM Policy for Lambda
+
 resource "aws_iam_policy" "lambda_policy" {
   name        = var.lambda_policy_name
   description = "Permissions for the Lambda function to archive CloudWatch logs"
@@ -109,20 +105,18 @@ resource "aws_iam_policy" "lambda_policy" {
   })
 }
 
-# ✅ Attach IAM Policy to Role
+
 resource "aws_iam_role_policy_attachment" "lambda_attach" {
   role       = aws_iam_role.lambda_role.name
   policy_arn = aws_iam_policy.lambda_policy.arn
 }
 
-# ✅ Package Lambda Code
 data "archive_file" "function" {
   type        = "zip"
   source_file = "${path.module}/lambda/main.py"
   output_path = "${path.module}/lambda_function.zip"
 }
 
-# ✅ Lambda Function
 resource "aws_lambda_function" "log_archiver" {
   function_name = var.lambda_function_name
   role          = aws_iam_role.lambda_role.arn
@@ -141,21 +135,19 @@ resource "aws_lambda_function" "log_archiver" {
   }
 }
 
-# ✅ CloudWatch Event Rule to Trigger Lambda Daily
 resource "aws_cloudwatch_event_rule" "schedule" {
   name                = var.event_rule_name
   description         = "Triggers log archiving every day"
   schedule_expression = var.schedule_expression
 }
 
-# ✅ Event Rule Target (Lambda)
 resource "aws_cloudwatch_event_target" "trigger_lambda" {
   rule      = aws_cloudwatch_event_rule.schedule.name
   target_id = "log_archiver_lambda"
   arn       = aws_lambda_function.log_archiver.arn
 }
 
-# ✅ Lambda Permission for CloudWatch Event Rule
+
 resource "aws_lambda_permission" "allow_cloudwatch" {
   statement_id  = "AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
