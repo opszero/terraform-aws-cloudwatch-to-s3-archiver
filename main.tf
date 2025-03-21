@@ -125,6 +125,7 @@ resource "aws_lambda_function" "log_archiver" {
   timeout       = var.lambda_timeout
   memory_size   = var.lambda_memory_size
 
+
   filename         = data.archive_file.function.output_path
   source_code_hash = data.archive_file.function.output_base64sha256
 
