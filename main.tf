@@ -134,6 +134,12 @@ resource "aws_lambda_function" "log_archiver" {
       S3_BUCKET = aws_s3_bucket.log_archive.bucket
     }
   }
+  lifecycle {
+    ignore_changes = [
+      last_modified,
+      source_code_hash
+    ]
+  }
 }
 
 resource "aws_cloudwatch_event_rule" "schedule" {
